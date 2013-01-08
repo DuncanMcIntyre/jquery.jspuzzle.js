@@ -1,10 +1,10 @@
 ﻿/*
 * jquery.jspuzzle.js
 * jQuery Photo Puzzle Plugin
-* http://duncanmcintyre.net/plugins/jspuzzle/
+* http://duncanmcintyre.net/plugins/jspuzzle-1-0/
 *
 * Copyright (c) 2011 Duncan McIntyre http://duncanmcintyre.net
-* Version Beta
+* 1.0
 * Dual licensed under the MIT and GPL licenses.
 */
 
@@ -63,6 +63,7 @@
                         newPuzzlePiece.width(puzzlepiece.width);
                         newPuzzlePiece.height(puzzlepiece.height);
                         newPuzzlePiece.css("background-position", (ic == 0 ? 0 : (0 - left)) + "px " + (ir == 0 ? 0 : (0 - top)) + "px");
+                        newPuzzlePiece.hover(function (e) { puzzlepiece.mouseover(e); }, function (e) { puzzlepiece.mouseout(e); });
                         newPuzzlePiece.click(function (e) { puzzlepiece.click(e); });
                     }
                 }
@@ -98,10 +99,10 @@
                         var iindexTop = $(puzzlepiece.all[iindex]).position().top;
                         var randomLeft = $(puzzlepiece.all[puzzlepiece.random]).position().left;
                         var iindexLeft = $(puzzlepiece.all[iindex]).position().left;
-                        $(puzzlepiece.all[iindex]).css("top", randomTop);
-                        $(puzzlepiece.all[iindex]).css("left", randomLeft);
-                        $(puzzlepiece.all[puzzlepiece.random]).css("top", iindexTop);
-                        $(puzzlepiece.all[puzzlepiece.random]).css("left", iindexLeft);
+                        $(puzzlepiece.all[iindex]).css("top", randomTop).attr("puzzlepiecetop", randomTop);
+                        $(puzzlepiece.all[iindex]).css("left", randomLeft).attr("puzzlepieceleft", randomLeft);
+                        $(puzzlepiece.all[puzzlepiece.random]).css("top", iindexTop).attr("puzzlepiecetop", iindexTop);
+                        $(puzzlepiece.all[puzzlepiece.random]).css("left", iindexLeft).attr("puzzlepieceleft", iindexLeft);
                         //$(puzzlepiece.all[iindex]).animate({ top: randomTop, left: randomLeft }, settings.slideSpeed);
                         //$(puzzlepiece.all[puzzlepiece.random]).animate({ top: iindexTop, left: iindexLeft }, settings.slideSpeed);
                         //$(puzzlepiece.all[iindex]).css("background-position", puzzlepiece.bgX[puzzlepiece.random] + "px " + puzzlepiece.bgY[puzzlepiece.random] + "px");
@@ -127,33 +128,85 @@
                 left: new Array()
             },
             all: null,
+            mouseover: function (e) {
+                var srcE = (e.srcElement != undefined ? e.srcElement : e.target);
+                var element = $((srcE != undefined ? srcE : "#" + e.id));
+                element.css("opacity", "0.7");
+            },
+            mouseout: function (e) {
+                var srcE = (e.srcElement != undefined ? e.srcElement : e.target);
+                var element = $((srcE != undefined ? srcE : "#" + e.id));
+                element.css("opacity", "1.0");
+            },
             click: function (e) {
                 var ppempty = $("#ppempty");
                 var srcE = (e.srcElement != undefined ? e.srcElement : e.target);
                 var element = $((srcE != undefined ? srcE : "#" + e.id));
+                //IF CLICKED ELEMENT IS ABOVE THE EMPTY PIECE
                 if (((element.position().top + element.height()) == ppempty.position().top) && element.position().left == ppempty.position().left) {
                     var emptypiece = ppempty.position().top;
                     var clickedpiece = element.position().top;
-                    element.animate({ top: emptypiece }, settings.slideSpeed);
-                    ppempty.animate({ top: clickedpiece }, settings.slideSpeed);
+                    element.animate({ top: emptypiece }, settings.slideSpeed).attr("puzzlepiecetop", emptypiece);
+                    ppempty.animate({ top: clickedpiece }, settings.slideSpeed).attr("puzzlepiecetop", clickedpiece);
                 }
+                //IF CLICKED ELEMENT IS ON THE LEFT SIDE OF THE EMPTY PIECE
                 else if (((element.position().left + element.width()) == ppempty.position().left) && element.position().top == ppempty.position().top) {
                     var emptypiece = ppempty.position().left;
                     var clickedpiece = element.position().left;
-                    element.animate({ left: emptypiece }, settings.slideSpeed);
-                    ppempty.animate({ left: clickedpiece }, settings.slideSpeed);
+                    element.animate({ left: emptypiece }, settings.slideSpeed).attr("puzzlepieceleft", emptypiece);
+                    ppempty.animate({ left: clickedpiece }, settings.slideSpeed).attr("puzzlepieceleft", clickedpiece);
                 }
-                else if (((ppempty.position().top + ppempty.height()) == element.position().top) && element.position().left == ppempty.position().left) {
+                //IF CLICKED ELEMENT IS BELOW THE EMPTY PIECE
+                else if ((element.position().top == (ppempty.position().top + ppempty.height())) && element.position().left == ppempty.position().left) {
                     var emptypiece = ppempty.position().top;
                     var clickedpiece = element.position().top;
-                    element.animate({ top: emptypiece }, settings.slideSpeed);
-                    ppempty.animate({ top: clickedpiece }, settings.slideSpeed);
+                    element.animate({ top: emptypiece }, settings.slideSpeed).attr("puzzlepiecetop", emptypiece);
+                    ppempty.animate({ top: clickedpiece }, settings.slideSpeed).attr("puzzlepiecetop", clickedpiece);
                 }
-                else if (((ppempty.position().left + ppempty.width()) == element.position().left) && element.position().top == ppempty.position().top) {
+                //IF CLICKED ELEMENT IS ON THE RIGHT SIDE THE EMPTY PIECE
+                else if ((element.position().left == (ppempty.position().left + ppempty.width())) && element.position().top == ppempty.position().top) {
                     var emptypiece = ppempty.position().left;
                     var clickedpiece = element.position().left;
-                    element.animate({ left: emptypiece }, settings.slideSpeed);
-                    ppempty.animate({ left: clickedpiece }, settings.slideSpeed);
+                    element.animate({ left: emptypiece }, settings.slideSpeed).attr("puzzlepieceleft", emptypiece);
+                    ppempty.animate({ left: clickedpiece }, settings.slideSpeed).attr("puzzlepieceleft", clickedpiece);
+                }
+                //IF CLICKED ELEMENT IS THE 2ND PIECE ABOVE THE EMPTY PIECE
+                else if (((element.position().top + (element.height() * 2)) == ppempty.position().top) && element.position().left == ppempty.position().left) {
+                    var nextelement = $(".jspuzzlepiece[puzzlepiecetop='" + (element.position().top + element.height()) + "'][puzzlepieceleft='" + (element.position().left) + "']");
+                    var emptypiece = ppempty.position().top;
+                    var clickedpiece = element.position().top;
+                    element.animate({ top: emptypiece - element.height() }, settings.slideSpeed).attr("puzzlepiecetop", emptypiece - element.height());
+                    nextelement.animate({ top: emptypiece }, settings.slideSpeed).attr("puzzlepiecetop", emptypiece);
+                    ppempty.animate({ top: clickedpiece }, settings.slideSpeed).attr("puzzlepiecetop", clickedpiece);
+                }
+                //IF CLICKED ELEMENT IS THE 2ND PIECE ON THE LEFT SIDE OF THE EMPTY PIECE
+                else if (((element.position().left + (element.width() * 2)) == ppempty.position().left) && element.position().top == ppempty.position().top) {
+                    var nextelement = $(".jspuzzlepiece[puzzlepiecetop='" + (element.position().top) + "'][puzzlepieceleft='" + (element.position().left + element.width()) + "']");
+                    var emptypiece = ppempty.position().left;
+                    var clickedpiece = element.position().left;
+                    element.animate({ left: emptypiece - element.width() }, settings.slideSpeed).attr("puzzlepieceleft", emptypiece - element.width());
+                    nextelement.animate({ left: emptypiece }, settings.slideSpeed).attr("puzzlepieceleft", emptypiece);
+                    ppempty.animate({ left: clickedpiece }, settings.slideSpeed).attr("puzzlepieceleft", clickedpiece);
+                }
+                //IF CLICKED ELEMENT IS THE 2ND PIECE BELOW THE EMPTY PIECE
+                else if ((element.position().top == (ppempty.position().top + (ppempty.height() * 2))) && element.position().left == ppempty.position().left) {
+                    var nextelement = $(".jspuzzlepiece[puzzlepiecetop='" + (element.position().top - element.height()) + "'][puzzlepieceleft='" + (element.position().left) + "']");
+                    //nextelement.css("border", "solid 2px #fff");
+                    var emptypiece = ppempty.position().top;
+                    var clickedpiece = element.position().top;
+                    element.animate({ top: emptypiece + element.height() }, settings.slideSpeed).attr("puzzlepiecetop", emptypiece + element.height());
+                    nextelement.animate({ top: emptypiece }, settings.slideSpeed).attr("puzzlepiecetop", emptypiece);
+                    ppempty.animate({ top: clickedpiece }, settings.slideSpeed).attr("puzzlepiecetop", clickedpiece);
+                }
+                //IF CLICKED ELEMENT IS THE 2ND PIECE ON THE RIGHT SIDE THE EMPTY PIECE
+                else if ((element.position().left == (ppempty.position().left + (ppempty.width() * 2))) && element.position().top == ppempty.position().top) {
+                    var nextelement = $(".jspuzzlepiece[puzzlepiecetop='" + (element.position().top) + "'][puzzlepieceleft='" + (element.position().left - element.width()) + "']");
+                    //nextelement.css("border", "solid 2px #fff");
+                    var emptypiece = ppempty.position().left;
+                    var clickedpiece = element.position().left;
+                    element.animate({ left: emptypiece + element.width() }, settings.slideSpeed).attr("puzzlepieceleft", emptypiece + element.width());
+                    nextelement.animate({ left: emptypiece }, settings.slideSpeed).attr("puzzlepieceleft", emptypiece);
+                    ppempty.animate({ left: clickedpiece }, settings.slideSpeed).attr("puzzlepieceleft", clickedpiece);
                 }
 
 
@@ -176,7 +229,7 @@
             setTimeout(function () { methods.init(obj); }, 1000);
         }
         else if (typeof options === 'string') {
-           
+
         }
 
     };
